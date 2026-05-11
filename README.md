@@ -145,7 +145,7 @@ rule-files is a list that tells Suricata which rule files to load and activate w
 Now let's edit the configuration files local.rules
 
 ```bash
- sudo nano /etc/suricata/rules/local.rules
+ sudo nano /var/lib/suricata/rules/local.rules
 ```
 
 ## ICMP Ping Detection
@@ -159,7 +159,11 @@ alert icmp any any -> any any (msg:"ICMP Ping Detected"; sid:1000001; rev:1;)
 ```bash
 alert tcp any any -> any any (msg:"Possible Nmap Scan"; flags:S; threshold:type threshold, track by_src, count 20, seconds 10; sid:1000002; rev:1;)
 ```
+Test the configuration file:
 
+```bash
+sudo suricata -T -c /etc/suricata/suricata.yaml -v
+```
 Restart Suricata after adding rules:
 
 ```bash
@@ -175,24 +179,12 @@ sudo systemctl restart suricata
 Run from Kali:
 
 ```bash
-nmap -sS 192.168.56.10
+nmap -sS 10.0.0.7
 ```
 
 Expected Result:
 
 * Suricata generates scan alerts in `fast.log`
-
----
-
-## SSH Brute Force with Hydra
-
-```bash
-hydra -l root -P rockyou.txt ssh://192.168.56.30
-```
-
-Expected Result:
-
-* Multiple SSH brute-force alerts triggered
 
 ---
 
