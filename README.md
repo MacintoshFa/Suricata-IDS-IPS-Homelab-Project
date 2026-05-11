@@ -145,7 +145,7 @@ rule-files is a list that tells Suricata which rule files to load and activate w
 Now let's edit the configuration files local.rules
 
 ```bash
- sudo nano /etc/suricata/suricata.yaml
+ sudo nano /etc/suricata/rules/local.rules
 ```
 
 ## ICMP Ping Detection
