@@ -9,7 +9,7 @@ This project demonstrates the deployment and configuration of a Suricata Intrusi
 # Objectives
 
 * Deploy Suricata on Ubuntu Server
-* Configure IDS and IPS functionality
+* Configure IDS
 * Monitor live network traffic
 * Create custom detection rules
 * Simulate attacks from Kali Linux
@@ -35,7 +35,6 @@ Network Type: Host-Only Adapter
 * Kali Linux
 * VirtualBox
 * Nmap
-* Wireshark
 * Linux CLI
 
 ---
@@ -152,13 +151,13 @@ Now let's edit the configuration files local.rules
 ## ICMP Ping Detection
 
 ```bash
-alert icmp any any -> any any (msg:"ICMP Ping Detected"; sid:1000001; rev:1;)
+alert icmp any any -> $HOME_NET any (msg:"ICMP Ping Detected"; sid:1000001; rev:1;)
 ```
 
 ## Nmap Scan Detection
 
 ```bash
-alert tcp any any -> any any (msg:"Possible Nmap Scan"; flags:S; threshold:type threshold, track by_src, count 20, seconds 10; sid:1000002; rev:1;)
+alert tcp any any -> $HOME_NET any (msg:"Possible Nmap Scan"; flags:S; threshold:type threshold, track by_src, count 20, seconds 10; sid:1000002; rev:1;)
 ```
 ![Alt text](editlocalrules.png)
 Test the configuration file:
@@ -182,6 +181,7 @@ Run from Kali:
 ```bash
 nmap -sS 10.0.0.7
 ```
+![Alt text](attack.png)
 
 Expected Result:
 
@@ -194,9 +194,9 @@ Expected Result:
 ## Fast Log
 
 ```bash
-sudo cat /var/log/suricata/fast.log
+sudo tail -f /var/log/suricata/fast.log
 ```
-
+![Alt text](alert.png)
 ## Eve JSON Log
 
 ```bash
@@ -218,240 +218,16 @@ Example alert:
 
 ---
 
-# IPS Mode Configuration
-
-Intrusion Prevention System (IPS) mode allows Suricata to actively block malicious traffic instead of only generating alerts. In IDS mode, traffic is monitored and logged. In IPS mode, packets matching configured rules are dropped before reaching the target system.
-
----
-
-# IDS vs IPS
-
-| Feature         | IDS                | IPS               |
-| --------------- | ------------------ | ----------------- |
-| Detect Threats  | Yes                | Yes               |
-| Generate Alerts | Yes                | Yes               |
-| Block Traffic   | No                 | Yes               |
-| Placement       | Passive Monitoring | Inline Monitoring |
-
----
-
-# IPS Lab Architecture
-
-```text
-[Kali Linux Attacker]
-          |
-          |
-     [Suricata IPS]
-          |
-          |
-    [Ubuntu server]
-```
-
-In this setup, all traffic flows through the Suricata system before reaching the target machine.
-
----
-
-# Enable IPS Mode Using NFQUEUE
-
-## Install Dependencies
-
-```bash
-sudo apt install iptables-persistent -y
-```
-
-## Configure iptables
-
-Send packets to NFQUEUE for Suricata inspection:
-
-```bash
-sudo iptables -I INPUT -j NFQUEUE
-```
-
-Forward traffic to queue 0:
-
-```bash
-sudo iptables -I FORWARD -j NFQUEUE --queue-num 0
-```
-
-Verify rules:
-
-```bash
-sudo iptables -L
-```
-
----
-
-# Running Suricata in IPS Mode
-
-Start Suricata using NFQUEUE:
-
-```bash
-sudo suricata -q 0 -D
-```
-
-Explanation:
-
-* `-q 0` attaches Suricata to NFQUEUE 0
-* `-D` runs Suricata as a daemon
-
-Verify process:
-
-```bash
-sudo systemctl status suricata
-```
-
-or
-
-```bash
-ps aux | grep suricata
-```
-
----
-
-# Creating Drop Rules
-
-IPS mode requires `drop` rules instead of `alert` rules.
-
-## Block ICMP Ping
-
-```bash
-drop icmp any any -> any any (msg:"Blocked ICMP Ping"; sid:2000001; rev:1;)
-```
-
-## Block Nmap SYN Scans
-
-```bash
-drop tcp any any -> any any (msg:"Blocked Nmap SYN Scan"; flags:S; threshold:type threshold, track by_src, count 10, seconds 5; sid:2000002; rev:1;)
-```
-
-## Block SSH Brute Force Attempts
-
-```bash
-drop tcp any any -> any 22 (msg:"Blocked SSH Brute Force"; flow:to_server; threshold:type both, track by_src, count 5, seconds 60; sid:2000003; rev:1;)
-```
-
-Save rules in:
-
-```bash
-/etc/suricata/rules/local.rules
-```
-
-Restart Suricata:
-
-```bash
-sudo systemctl restart suricata
-```
-
----
-
-# IPS Testing
-
-## Test ICMP Blocking
-
-From Kali Linux:
-
-```bash
-ping 192.168.56.10
-```
-
-Expected Result:
-
-* Ping requests fail
-* Suricata logs blocked packets
-
----
-
-## Test Nmap Blocking
-
-```bash
-nmap -sS 192.168.56.10
-```
-
-Expected Result:
-
-* Scan results incomplete or blocked
-* Drop alerts appear in logs
-
----
-
-# Monitoring IPS Alerts
-
-## Fast Log
-
-```bash
-sudo tail -f /var/log/suricata/fast.log
-```
-
-Example:
-
-```text
-Blocked Nmap SYN Scan
-```
-
----
-
-## Eve JSON Log
-
-```bash
-sudo tail -f /var/log/suricata/eve.json
-```
-
-Example output:
-
-```json
-{
-  "event_type": "alert",
-  "action": "blocked",
-  "src_ip": "192.168.56.20",
-  "dest_ip": "192.168.56.10",
-  "alert": {
-    "signature": "Blocked SSH Brute Force"
-  }
-}
-```
-
----
-
-# IPS Advantages
-
-* Stops malicious traffic in real time
-* Reduces attack surface
-* Helps prevent unauthorized access
-* Detects and blocks reconnaissance activity
-* Adds active defense to the network
-
----
-
-# IPS Challenges
-
-* Incorrect rules may block legitimate traffic
-* Inline inspection may increase latency
-* Requires regular tuning and monitoring
-* False positives may disrupt services
-
----
-
 # Project Skills Demonstrated
 
 * Network traffic analysis
-* IDS/IPS deployment
+* IDS deployment
 * Linux administration
 * Threat detection
 * Custom rule creation
 * Security monitoring
 * Attack simulation
 * Log analysis
-
----
-
-# Screenshots to Include
-
-* Suricata running on Ubuntu
-* Custom rule configuration
-* Nmap scan from Kali Linux
-* Suricata alert logs
-* Hydra brute-force attempt
-* VirtualBox network configuration
 
 ---
 
@@ -504,6 +280,6 @@ Built and configured a Suricata IDS/IPS homelab using Ubuntu Server, Kali Linux,
 
 # Author
 
-Your Name
+Macintosh Fatal
 
 Cybersecurity Student | SOC Analyst Aspirant | Homelab Enthusiast
