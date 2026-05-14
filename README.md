@@ -140,6 +140,7 @@ But before we have to create the rules-file
 rule-files:
   -local.rules
 ```
+![Alt text](rules-path.png)
 rule-files is a list that tells Suricata which rule files to load and activate when it starts up.
 
 Now let's edit the configuration files local.rules
