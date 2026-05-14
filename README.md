@@ -22,8 +22,8 @@ This project demonstrates the deployment and configuration of a Suricata Intrusi
 
 | System        | Role             | IP Address    |
 | ------------- | ---------------- | ------------- |
-| Ubuntu Server | Suricata IDS/IPS | 192.168.56.10 |
-| Kali Linux    | Attacker Machine | 192.168.56.20 |
+| Ubuntu Server | Suricata IDS/IPS | 10.0.0.7 |
+| Kali Linux    | Attacker Machine | 10.0.0.8 |
 Network Type: Host-Only Adapter
 
 ---
