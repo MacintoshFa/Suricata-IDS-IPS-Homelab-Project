@@ -160,8 +160,8 @@ alert icmp any any -> any any (msg:"ICMP Ping Detected"; sid:1000001; rev:1;)
 ```bash
 alert tcp any any -> any any (msg:"Possible Nmap Scan"; flags:S; threshold:type threshold, track by_src, count 20, seconds 10; sid:1000002; rev:1;)
 ```
+![Alt text](editlocalrules.png)
 Test the configuration file:
-
 ```bash
 sudo suricata -T -c /etc/suricata/suricata.yaml -v
 ```
