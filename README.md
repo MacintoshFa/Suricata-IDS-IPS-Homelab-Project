@@ -207,8 +207,8 @@ Example alert:
 ```json
 {
   "event_type": "alert",
-  "src_ip": "192.168.56.20",
-  "dest_ip": "192.168.56.10",
+  "src_ip": "10.0.0.8",
+  "dest_ip": "10.0.0.7",
   "alert": {
     "signature": "Possible Nmap Scan"
   }
@@ -243,7 +243,7 @@ Intrusion Prevention System (IPS) mode allows Suricata to actively block malicio
      [Suricata IPS]
           |
           |
-    [Windows Target]
+    [Ubuntu server]
 ```
 
 In this setup, all traffic flows through the Suricata system before reaching the target machine.
